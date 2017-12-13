@@ -46,7 +46,7 @@ Yamaha_mcAccessory.prototype.getState = function(callback) {
   }.bind(this));
 }
   
-LockitronAccessory.prototype.setState = function(state, callback) {
+Yamaha_mcAccessory.prototype.setState = function(state, callback) {
   var ymcState = (state == Characteristic.YMCCurrentState.ON) ? "on" : "off";
 
   this.log("Set state to %s", ymcState);
@@ -62,7 +62,7 @@ LockitronAccessory.prototype.setState = function(state, callback) {
         .setCharacteristic(Characteristic.YMCCurrentState, currentState);
    callback(null); // success
 
-  }.bind(this));
+  }.bind(this);
 }
 
 Yamaha_mcAccessory.prototype.getServices = function() {
