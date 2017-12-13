@@ -62,7 +62,6 @@ Yamaha_mcAccessory.prototype.setState = function(state, callback) {
         .setCharacteristic(Characteristic.YMCCurrentState, currentState);
    callback(null); // success
 
-  }.bind(this);
 }
 
 Yamaha_mcAccessory.prototype.getServices = function() {
