@@ -1,9 +1,11 @@
+var Service, Characteristic;
+
 const request = require('request');
 const url = require('url');
  
 var yamaha, zone;
 
-var Service, Characteristic;
+
 
 module.exports = function(homebridge) {
   Service = homebridge.hap.Service;
@@ -13,6 +15,7 @@ module.exports = function(homebridge) {
 }
 
 function Yamaha_mcAccessory(log, config) {
+  this.currentState = false:
   this.log = log;
   this.name = config["name"];
   this.host = config["host"];
@@ -36,11 +39,8 @@ Yamaha_mcAccessory.prototype = {
     this.informationService = informationService;
     this.switchService = switchService;
     return [informationService, switchService];
-  }
-}; 
-
-Yamaha_mcAccessory.prototype = {
- 
+  },
+  
   getSwitchOnCharacteristic: function (next) {
     const me = this;
     request({
@@ -49,7 +49,7 @@ Yamaha_mcAccessory.prototype = {
             headers: {
                 'X-AppName': 'MusicCast/1.0',
                 'X-AppPort': '41100',
-			         },
+			},
     }, 
     function (error, response, body) {
       if (error) {
