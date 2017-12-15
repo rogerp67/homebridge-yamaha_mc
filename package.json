@@ -18,8 +18,8 @@
     "homebridge": ">=0.2.0"
   },
    "dependencies": {
-    "bluebird": "^3.3.4",
     "peer-ssdp": "0.0.5",
-    "request": "^2.69.0"
+    "request": "^2.69.0",
+     "url": "0.11.0"
   }
 }
