@@ -49,6 +49,7 @@ Yamaha_mcAccessory.prototype = {
             headers: {
                 'X-AppName': 'MusicCast/1.0',
                 'X-AppPort': '41100',
+			         },
     }, 
     function (error, response, body) {
       if (error) {
