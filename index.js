@@ -1,6 +1,7 @@
-var request = require("request");
-var YamahaYXC = require("./yamahayxc.js");
-
+const request = require('request');
+const url = require('url');
+ 
+var yamaha, zone;
 
 var Service, Characteristic;
 
@@ -16,54 +17,64 @@ function Yamaha_mcAccessory(log, config) {
   this.name = config["name"];
   this.host = config["host"];
   this.zone = config["zone"];
-  var yamaha = new YamahaYXC(host);
-  var zone = this.zone;
-  
-  this.service = new Service.YMCMechanism(this.name);
-  
-  this.service
-    .getCharacteristic(Characteristic.YMCCurrentState)
-    .on('get', this.getState.bind(this));
-  
-  this.service
-    .getCharacteristic(Characteristic.YMCTargetState)
-    .on('get', this.getState.bind(this))
-    .on('set', this.setState.bind(this));
 }
 
-Yamaha_mcAccessory.prototype.getState = function(callback) {
-  this.log("Getting current state...");
-  
-  yamaha.getStatus(zone);
-  
-  yamaha.getStatus().done(function(result){
-        //console.log('result:' + result);
-      var json = JSON.parse(result);
-      var state = json.power; // "on" or "off"
-      this.log("YMC state is %s", state);
-      var onState = state == "on"
-      callback(null, onState); // success
-  }.bind(this));
-}
-  
-Yamaha_mcAccessory.prototype.setState = function(state, callback) {
-  var ymcState = (state == Characteristic.YMCCurrentState.ON) ? "on" : "off";
+Yamaha_mcAccessory.prototype = {
+  getServices: function () {
+    let informationService = new Service.AccessoryInformation();
+    informationService
+      .setCharacteristic(Characteristic.Manufacturer, "Yamaha")
+      .setCharacteristic(Characteristic.Model, "RN-602")
+      .setCharacteristic(Characteristic.SerialNumber, "551663");
+ 
+    let switchService = new Service.Switch("Yamaha MC");
+    switchService
+      .getCharacteristic(Characteristic.On)
+        .on('get', this.getSwitchOnCharacteristic.bind(this))
+        .on('set', this.setSwitchOnCharacteristic.bind(this));
+ 
+    this.informationService = informationService;
+    this.switchService = switchService;
+    return [informationService, switchService];
+  }
+}; 
 
-  this.log("Set state to %s", ymcState);
-
-  if (ymcState == "on") yamaha.powerOn(zone);
-  else yamaha.powerOff(zone);
-    
-   // we succeeded, so update the "current" state as well
-   var currentState = (state == Characteristic.YMCCurrentState.ON) ?
-   Characteristic.YMCCurrentState.ON : Characteristic.YMCCurrentState.OFF;
-      
-   this.service
-        .setCharacteristic(Characteristic.YMCCurrentState, currentState);
-   callback(null); // success
-
-},
-
-Yamaha_mcAccessory.prototype.getServices = function() {
-  return [this.service];
-}
+Yamaha_mcAccessory.prototype = {
+ 
+  getSwitchOnCharacteristic: function (next) {
+    const me = this;
+    request({
+        method: 'GET',
+            url: 'http://' + this.host + '/YamahaExtendedControl/v1/' + this.zone + '/getStatus',
+            headers: {
+                'X-AppName': 'MusicCast/1.0',
+                'X-AppPort': '41100',
+    }, 
+    function (error, response, body) {
+      if (error) {
+        me.log('STATUS: ' + response.statusCode);
+        me.log(error.message);
+        return next(error);
+      }
+      return next(null, (body.power=='on'));
+    });
+  },
+   
+  setSwitchOnCharacteristic: function (on, next) {
+    const me = this;
+    request({
+      url: 'http://' + this.host + '/YamahaExtendedControl/v1/' + this.zone + '/setPower?power=' + (on ? 'on' : 'standby') ,
+      body: {'targetState': on},
+      method: 'POST',
+      headers: {'Content-type': 'application/json'}
+    },
+    function (error, response) {
+      if (error) {
+        me.log('STATUS: ' + response.statusCode);
+        me.log(error.message);
+        return next(error);
+      }
+      return next();
+    });
+  }
+};
