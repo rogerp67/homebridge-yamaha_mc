@@ -57,8 +57,9 @@ Yamaha_mcAccessory.prototype = {
         me.log(error.message);
         return next(error);
       }
-	  //me.log('HTTP GetStatus result:' + (body.power=='on' ? "On" : "Off"));
-      return next(null, (body.power=='on'));
+	  att=JSON.parse(body);
+	  me.log('HTTP GetStatus result:' + (att.power=='on' ? "On" : "Off"));
+      return next(null, (att.power=='on'));
     });
   },
    
