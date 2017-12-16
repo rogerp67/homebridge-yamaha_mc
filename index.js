@@ -15,7 +15,7 @@ module.exports = function(homebridge) {
 }
 
 function Yamaha_mcAccessory(log, config) {
-  this.currentState = false:
+  this.currentState = false;
   this.log = log;
   this.name = config["name"];
   this.host = config["host"];
@@ -26,11 +26,11 @@ Yamaha_mcAccessory.prototype = {
   getServices: function () {
     let informationService = new Service.AccessoryInformation();
     informationService
-      .setCharacteristic(Characteristic.Manufacturer, "Yamaha")
-      .setCharacteristic(Characteristic.Model, "RN-602")
-      .setCharacteristic(Characteristic.SerialNumber, "551663");
+      .setCharacteristic(Characteristic.Manufacturer, "Cambit")
+      .setCharacteristic(Characteristic.Model, "Yamaha MC")
+      .setCharacteristic(Characteristic.SerialNumber, "6710160330");
  
-    let switchService = new Service.Switch("Yamaha MC");
+    let switchService = new Service.Switch("Receiver");
     switchService
       .getCharacteristic(Characteristic.On)
         .on('get', this.getSwitchOnCharacteristic.bind(this))
@@ -53,28 +53,30 @@ Yamaha_mcAccessory.prototype = {
     }, 
     function (error, response, body) {
       if (error) {
-        me.log('STATUS: ' + response.statusCode);
+        //me.log('HTTP get error ');
         me.log(error.message);
         return next(error);
       }
+	  //me.log('HTTP GetStatus result:' + (body.power=='on' ? "On" : "Off"));
       return next(null, (body.power=='on'));
     });
   },
    
   setSwitchOnCharacteristic: function (on, next) {
-    const me = this;
+    var url='http://' + this.host + '/YamahaExtendedControl/v1/' + this.zone + '/setPower?power=' + (on ? 'on' : 'standby');
+	const me = this;
     request({
-      url: 'http://' + this.host + '/YamahaExtendedControl/v1/' + this.zone + '/setPower?power=' + (on ? 'on' : 'standby') ,
-      body: {'targetState': on},
-      method: 'POST',
-      headers: {'Content-type': 'application/json'}
+      url: url  ,
+      method: 'GET',
+      body: ""
     },
     function (error, response) {
       if (error) {
-        me.log('STATUS: ' + response.statusCode);
+        //me.log('error with HTTP url='+url);
         me.log(error.message);
         return next(error);
       }
+	  //me.log('HTTP setPower succeeded with url:' + url);
       return next();
     });
   }
