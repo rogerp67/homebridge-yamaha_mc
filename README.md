@@ -1,6 +1,9 @@
 "# homebridge-yamaha_mc" 
-Add this to the config.json, the last 3 items adjusted to your own situation
-(although 'main' in general should work, not to be confused with rooms):
+Based on the Yamaha Extended Control API Spec (https://github.com/samvdb/php-musiccast-api/blob/master/yxc-api-spec-advanced.pdf)
+With this homebridge module you you can switch on and switch off your Yamaha Networked devices, in my case MusicCast devices.
+ 
+Add this to the config.json, for each device you want to add. Just adjust the name and the IP address for each accessory. 
+(The zone 'main' in general should work, not to be confused with room names):
 
 "accessories": [
         {
